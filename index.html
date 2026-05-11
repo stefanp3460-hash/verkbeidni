@@ -3,10 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Verkbeiðni</title>
+
+  <title>Verkbeiðni.is</title>
+
   <script src="https://cdn.tailwindcss.com"></script>
+
   <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
 
@@ -16,32 +20,274 @@
   <script type="text/babel">
 
 function App() {
+
+  const categories = [
+    "Smíði",
+    "Rafmagn",
+    "Pípulagnir",
+    "Málun",
+    "Þrif",
+    "Flutningar",
+    "Garðvinna",
+    "Snjómokstur",
+  ];
+
   return (
     <div className="min-h-screen bg-white text-slate-900">
-      <div className="max-w-7xl mx-auto px-6 py-24">
-        <h1 className="text-6xl font-black tracking-tight">
-          Verkbeiðni<span className="text-blue-600">.is</span>
-        </h1>
 
-        <p className="text-xl text-slate-600 mt-6 max-w-2xl">
-          Sendu inn verkefni og fáðu tilboð frá fyrirtækjum og fagmönnum.
-        </p>
+      <nav className="sticky top-0 z-50 border-b border-slate-200 bg-white">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
 
-        <div className="flex gap-4 mt-10">
-          <button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-2xl font-bold">
-            Setja inn verkefni
-          </button>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-black">
+              V
+            </div>
 
-          <button className="border border-slate-300 px-8 py-4 rounded-2xl font-bold">
-            Skrá fyrirtæki
-          </button>
+            <div className="text-2xl font-black tracking-tight">
+              Verkbeiðni<span className="text-blue-600">.is</span>
+            </div>
+          </div>
+
+          <div className="hidden md:flex items-center gap-8 text-sm font-semibold">
+            <a href="#how">Hvernig virkar þetta?</a>
+            <a href="#flokkar">Flokkar</a>
+            <a href="#fyrirtaeki">Fyrirtæki</a>
+
+            <button className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-2xl">
+              Setja inn verkefni
+            </button>
+          </div>
         </div>
-      </div>
+      </nav>
+
+      <section className="max-w-7xl mx-auto px-6 py-24 grid lg:grid-cols-2 gap-16 items-center">
+
+        <div>
+
+          <div className="inline-flex items-center gap-2 bg-slate-100 rounded-full px-4 py-2 text-sm font-semibold mb-6">
+            🇮🇸 Íslensk lausn fyrir verkefni og tilboð
+          </div>
+
+          <h1 className="text-5xl lg:text-7xl font-black leading-tight tracking-tight">
+            Sendu inn verk.
+            <span className="block text-blue-600">
+              Fáðu tilboð.
+            </span>
+          </h1>
+
+          <p className="text-slate-600 text-lg mt-6 max-w-xl leading-relaxed">
+            Verkbeiðni tengir fólk við fyrirtæki og fagmenn. Þú setur inn verkefni og færð tilboð frá fyrirtækjum á nokkrum mínútum.
+          </p>
+
+          <div className="flex flex-col sm:flex-row gap-4 mt-10">
+
+            <button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-2xl text-lg font-bold shadow-lg">
+              Setja inn verkefni
+            </button>
+
+            <button className="border border-slate-300 px-8 py-4 rounded-2xl text-lg font-bold">
+              Skrá fyrirtæki
+            </button>
+
+          </div>
+
+        </div>
+
+        <div className="bg-slate-50 border border-slate-200 rounded-[32px] p-6 shadow-2xl">
+
+          <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
+
+            <div className="flex items-center justify-between mb-6">
+
+              <div>
+                <p className="font-black text-lg">Ný verkbeiðni</p>
+                <p className="text-sm text-slate-500">
+                  Reykjanesbær · Málun
+                </p>
+              </div>
+
+              <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-bold">
+                Opin
+              </span>
+
+            </div>
+
+            <div className="bg-slate-50 rounded-2xl p-5">
+
+              <p className="font-bold">
+                Vantar að mála 120 fm hús að utan.
+              </p>
+
+              <p className="text-slate-500 text-sm mt-2">
+                Óska eftir verði og tímaramma.
+              </p>
+
+            </div>
+
+            <div className="space-y-4 mt-6">
+
+              {[1,2,3].map((item) => (
+                <div
+                  key={item}
+                  className="border border-slate-200 rounded-2xl p-4 flex items-center justify-between"
+                >
+
+                  <div>
+                    <p className="font-bold">
+                      Fyrirtæki #{item}
+                    </p>
+
+                    <p className="text-sm text-slate-500">
+                      Getum hafið verkefni fljótlega
+                    </p>
+                  </div>
+
+                  <div className="text-right">
+                    <p className="font-black">
+                      {450 + item * 50}.000 kr
+                    </p>
+
+                    <p className="text-xs text-slate-500">
+                      Tilboð
+                    </p>
+                  </div>
+
+                </div>
+              ))}
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+      <section id="how" className="bg-slate-50 py-24">
+
+        <div className="max-w-6xl mx-auto px-6">
+
+          <div className="text-center mb-16">
+
+            <h2 className="text-4xl font-black tracking-tight">
+              Hvernig virkar þetta?
+            </h2>
+
+            <p className="text-slate-600 mt-4 text-lg">
+              Þrjú einföld skref.
+            </p>
+
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+
+            {[
+              {
+                step: "1",
+                title: "Settu inn verkefni",
+                text: "Lýstu verkefninu og bættu við upplýsingum.",
+              },
+              {
+                step: "2",
+                title: "Fáðu tilboð",
+                text: "Fyrirtæki senda verð og upplýsingar.",
+              },
+              {
+                step: "3",
+                title: "Veldu aðila",
+                text: "Berðu saman tilboð og veldu réttan aðila.",
+              },
+            ].map((item) => (
+
+              <div
+                key={item.step}
+                className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100"
+              >
+
+                <div className="w-14 h-14 rounded-2xl bg-blue-600 text-white flex items-center justify-center text-xl font-black mb-6">
+                  {item.step}
+                </div>
+
+                <h3 className="text-2xl font-black mb-4">
+                  {item.title}
+                </h3>
+
+                <p className="text-slate-600 leading-relaxed">
+                  {item.text}
+                </p>
+
+              </div>
+
+            ))}
+
+          </div>
+
+        </div>
+
+      </section>
+
+      <section id="flokkar" className="py-24">
+
+        <div className="max-w-6xl mx-auto px-6">
+
+          <div className="mb-12">
+
+            <h2 className="text-4xl font-black tracking-tight">
+              Vinsælir flokkar
+            </h2>
+
+            <p className="text-slate-600 mt-3 text-lg">
+              Finndu rétta fagmanninn fyrir verkefnið.
+            </p>
+
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
+
+            {categories.map((category) => (
+              <div
+                key={category}
+                className="border border-slate-200 rounded-3xl p-6 text-center font-bold text-lg bg-white hover:border-blue-500 transition"
+              >
+                {category}
+              </div>
+            ))}
+
+          </div>
+
+        </div>
+
+      </section>
+
+      <footer className="border-t border-slate-200 py-10">
+
+        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
+
+          <div className="flex items-center gap-3">
+
+            <div className="w-10 h-10 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-black">
+              V
+            </div>
+
+            <div className="text-2xl font-black tracking-tight">
+              Verkbeiðni<span className="text-blue-600">.is</span>
+            </div>
+
+          </div>
+
+          <div className="text-sm text-slate-500">
+            © 2026 Verkbeiðni — Sendu inn verk. Fáðu tilboð.
+          </div>
+
+        </div>
+
+      </footer>
+
     </div>
   );
 }
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
+const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(<App />);
 
   </script>
