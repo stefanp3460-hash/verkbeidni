@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Verkbeiðni</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+
+<body class="bg-white">
+  <div id="root"></div>
+
+  <script type="text/babel">
+
+function App() {
+  return (
+    <div className="min-h-screen bg-white text-slate-900">
+      <div className="max-w-7xl mx-auto px-6 py-24">
+        <h1 className="text-6xl font-black tracking-tight">
+          Verkbeiðni<span className="text-blue-600">.is</span>
+        </h1>
+
+        <p className="text-xl text-slate-600 mt-6 max-w-2xl">
+          Sendu inn verkefni og fáðu tilboð frá fyrirtækjum og fagmönnum.
+        </p>
+
+        <div className="flex gap-4 mt-10">
+          <button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-2xl font-bold">
+            Setja inn verkefni
+          </button>
+
+          <button className="border border-slate-300 px-8 py-4 rounded-2xl font-bold">
+            Skrá fyrirtæki
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
+
+  </script>
+</body>
+</html>
