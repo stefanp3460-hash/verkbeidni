@@ -3,17 +3,23 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Verktilboð.is | Fáðu tilboð í verk</title>
-  <meta name="description" content="Settu inn verkefni og fáðu tilboð frá fyrirtækjum og fagmönnum á Íslandi." />
+  <title>Verktilbod.is | Fáðu tilboð í verk</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
+
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
   <style>
-    html { scroll-behavior: smooth; }
-    body { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: Inter, system-ui, sans-serif;
+    }
   </style>
 </head>
 
@@ -21,225 +27,360 @@
   <div id="root"></div>
 
   <script type="text/babel">
-function App() {
-  const categories = [
-    "Smíði", "Rafmagn", "Pípulagnir", "Málun",
-    "Þrif", "Flutningar", "Garðvinna", "Snjómokstur",
-    "Bílaþjónusta", "Fasteignaþjónusta", "Þakvinna", "Annað"
-  ];
 
-  const steps = [
-    ["1", "Settu inn verkefni", "Lýstu verkefninu, staðsetningu og hvað þarf að gera."],
-    ["2", "Fáðu tilboð", "Fyrirtæki senda þér verð, tímaramma og upplýsingar."],
-    ["3", "Veldu réttan aðila", "Berðu saman tilboð og veldu þann sem hentar best."]
+function App() {
+
+  const categories = [
+    "Smíði",
+    "Rafmagn",
+    "Pípulagnir",
+    "Málun",
+    "Þrif",
+    "Flutningar",
+    "Garðvinna",
+    "Snjómokstur",
+    "Bílaþjónusta",
+    "Fasteignaþjónusta",
+    "Þakvinna",
+    "Annað"
   ];
 
   return (
-    <div className="min-h-screen text-slate-950">
+    <div className="min-h-screen text-slate-900">
 
       <nav className="sticky top-0 z-50 border-b border-slate-200 bg-white/90 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-600 text-lg font-black text-white shadow-sm">
+
+            <div className="w-11 h-11 rounded-2xl bg-blue-600 flex items-center justify-center text-white font-black text-lg shadow-sm">
               V
             </div>
+
             <div className="text-2xl font-black tracking-tight">
-              Verktilboð<span className="text-blue-600">.is</span>
+              Verktilbod<span className="text-blue-600">.is</span>
             </div>
+
           </div>
 
-          <div className="hidden items-center gap-8 text-sm font-bold md:flex">
-            <a href="#how" className="hover:text-blue-600">Hvernig virkar þetta?</a>
-            <a href="#flokkar" className="hover:text-blue-600">Flokkar</a>
-            <a href="#fyrirtaeki" className="hover:text-blue-600">Fyrirtæki</a>
-            <a href="#form" className="rounded-2xl bg-blue-600 px-5 py-3 text-white shadow-lg hover:bg-blue-700">
-              Setja inn verkefni
+          <div className="hidden md:flex items-center gap-8 text-sm font-bold">
+
+            <a href="#how" className="hover:text-blue-600 transition">
+              Hvernig virkar þetta?
             </a>
+
+            <a href="#flokkar" className="hover:text-blue-600 transition">
+              Flokkar
+            </a>
+
+            <a href="#fyrirtaeki" className="hover:text-blue-600 transition">
+              Fyrirtæki
+            </a>
+
+            <button className="bg-blue-600 hover:bg-blue-700 transition text-white px-5 py-3 rounded-2xl shadow-lg">
+              Setja inn verkefni
+            </button>
+
           </div>
+
         </div>
+
       </nav>
 
       <section className="relative overflow-hidden bg-white">
+
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,#dbeafe,transparent_35%)]"></div>
 
-        <div className="relative mx-auto grid max-w-7xl items-center gap-16 px-6 py-24 lg:grid-cols-2 lg:py-32">
+        <div className="relative max-w-7xl mx-auto px-6 py-24 lg:py-32 grid lg:grid-cols-2 gap-16 items-center">
+
           <div>
-            <div className="mb-7 inline-flex rounded-full bg-blue-50 px-4 py-2 text-sm font-bold text-blue-700">
-              Íslenskur vettvangur fyrir verkefni og tilboð
+
+            <div className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-4 py-2 text-sm font-bold text-blue-700 mb-8">
+              🇮🇸 Íslenskur vettvangur fyrir verkefni og tilboð
             </div>
 
-            <h1 className="text-5xl font-black leading-tight tracking-tight sm:text-6xl lg:text-7xl">
+            <h1 className="text-5xl lg:text-7xl font-black tracking-tight leading-tight">
               Sendu inn verk.
-              <span className="block text-blue-600">Fáðu tilboð.</span>
+              <span className="block text-blue-600">
+                Fáðu tilboð.
+              </span>
             </h1>
 
-            <p className="mt-7 max-w-2xl text-xl leading-relaxed text-slate-600">
-              Verktilboð tengir einstaklinga og fyrirtæki við fagmenn. Settu inn verkefni og fáðu tilboð frá þjónustuaðilum á þínu svæði.
+            <p className="mt-8 text-xl leading-relaxed text-slate-600 max-w-2xl">
+              Verktilbod tengir einstaklinga og fyrirtæki við fagmenn.
+              Settu inn verkefni og fáðu tilboð frá þjónustuaðilum á þínu svæði.
             </p>
 
-            <div className="mt-10 flex flex-col gap-4 sm:flex-row">
-              <a href="#form" className="rounded-2xl bg-blue-600 px-8 py-5 text-center text-lg font-black text-white shadow-xl hover:bg-blue-700">
+            <div className="flex flex-col sm:flex-row gap-4 mt-10">
+
+              <button className="bg-blue-600 hover:bg-blue-700 transition text-white px-8 py-5 rounded-2xl text-lg font-black shadow-xl">
                 Setja inn verkefni
-              </a>
-              <a href="#fyrirtaeki" className="rounded-2xl border border-slate-300 bg-white px-8 py-5 text-center text-lg font-black hover:border-slate-500">
+              </button>
+
+              <button className="border border-slate-300 bg-white hover:border-slate-500 transition px-8 py-5 rounded-2xl text-lg font-black">
                 Skrá fyrirtæki
-              </a>
+              </button>
+
             </div>
 
-            <div className="mt-10 grid max-w-xl grid-cols-2 gap-4 text-sm font-semibold text-slate-600">
+            <div className="grid grid-cols-2 gap-4 mt-10 text-sm font-semibold text-slate-600 max-w-xl">
               <div>✓ Tilboð frá fleiri aðilum</div>
-              <div>✓ Einfalt og fljótlegt</div>
+              <div>✓ Fljótlegt og einfalt</div>
               <div>✓ Fyrir öll almenn verk</div>
               <div>✓ Beta útgáfa í þróun</div>
             </div>
+
           </div>
 
           <div className="rounded-[40px] border border-slate-200 bg-slate-50 p-5 shadow-2xl">
+
             <div className="rounded-[32px] bg-white p-7 shadow-sm">
-              <div className="mb-6 flex items-center justify-between">
+
+              <div className="flex items-center justify-between mb-6">
+
                 <div>
-                  <h3 className="text-2xl font-black">Nýtt verkefni</h3>
-                  <p className="text-slate-500">Reykjanesbær · Málun</p>
+                  <h3 className="text-2xl font-black">
+                    Nýtt verkefni
+                  </h3>
+
+                  <p className="text-slate-500">
+                    Reykjanesbær · Málun
+                  </p>
                 </div>
+
                 <span className="rounded-full bg-green-100 px-4 py-2 text-sm font-black text-green-700">
                   Opið
                 </span>
+
               </div>
 
               <div className="rounded-3xl bg-slate-50 p-6">
-                <h4 className="text-xl font-black">Vantar að mála 120 fm hús að utan.</h4>
-                <p className="mt-3 text-slate-600">Óska eftir verði, tímaramma og hvenær hægt væri að hefja verkið.</p>
+
+                <h4 className="text-xl font-black">
+                  Vantar að mála 120 fm hús að utan.
+                </h4>
+
+                <p className="text-slate-600 mt-3">
+                  Óska eftir verði og tímaramma.
+                </p>
+
               </div>
 
-              <div className="mt-7 space-y-4">
+              <div className="space-y-4 mt-7">
+
                 {[
                   ["Norður Málun", "Getum hafið næstu viku", "520.000 kr"],
                   ["Bláfell Verk", "Lausir eftir 10 daga", "485.000 kr"],
                   ["Reykjanes Þjónusta", "Tilboð eftir skoðun", "Skoðun fyrst"]
                 ].map(([name, desc, price]) => (
-                  <div className="flex items-center justify-between rounded-3xl border border-slate-200 p-5" key={name}>
+
+                  <div
+                    key={name}
+                    className="flex items-center justify-between rounded-3xl border border-slate-200 p-5"
+                  >
+
                     <div>
-                      <p className="font-black">{name}</p>
-                      <p className="text-sm text-slate-500">{desc}</p>
+                      <p className="font-black">
+                        {name}
+                      </p>
+
+                      <p className="text-sm text-slate-500">
+                        {desc}
+                      </p>
                     </div>
+
                     <div className="text-right">
-                      <p className="font-black">{price}</p>
-                      <p className="text-xs text-slate-500">Tilboð</p>
+                      <p className="font-black">
+                        {price}
+                      </p>
+
+                      <p className="text-xs text-slate-500">
+                        Tilboð
+                      </p>
                     </div>
+
                   </div>
+
                 ))}
+
               </div>
+
             </div>
+
           </div>
+
         </div>
+
       </section>
 
       <section id="how" className="py-24">
-        <div className="mx-auto max-w-6xl px-6">
-          <div className="mb-14 text-center">
-            <h2 className="text-4xl font-black tracking-tight lg:text-5xl">Hvernig virkar þetta?</h2>
-            <p className="mt-4 text-xl text-slate-600">Einfalt ferli frá verkefni yfir í tilboð.</p>
+
+        <div className="max-w-6xl mx-auto px-6">
+
+          <div className="text-center mb-16">
+
+            <h2 className="text-4xl lg:text-5xl font-black tracking-tight">
+              Hvernig virkar þetta?
+            </h2>
+
+            <p className="text-xl text-slate-600 mt-4">
+              Þrjú einföld skref frá verkefni yfir í tilboð.
+            </p>
+
           </div>
 
-          <div className="grid gap-8 md:grid-cols-3">
-            {steps.map(([num, title, text]) => (
-              <div className="rounded-[32px] border border-slate-200 bg-white p-8 shadow-sm" key={num}>
-                <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-600 text-xl font-black text-white">
-                  {num}
+          <div className="grid md:grid-cols-3 gap-8">
+
+            {[
+              ["1", "Settu inn verkefni", "Lýstu verkefninu og bættu við upplýsingum."],
+              ["2", "Fáðu tilboð", "Fyrirtæki senda verð og upplýsingar."],
+              ["3", "Veldu aðila", "Berðu saman tilboð og veldu réttan aðila."]
+            ].map(([number, title, text]) => (
+
+              <div
+                key={number}
+                className="rounded-[32px] border border-slate-200 bg-white p-8 shadow-sm"
+              >
+
+                <div className="w-14 h-14 rounded-2xl bg-blue-600 text-white flex items-center justify-center text-xl font-black mb-6">
+                  {number}
                 </div>
-                <h3 className="mb-4 text-2xl font-black">{title}</h3>
-                <p className="text-lg leading-relaxed text-slate-600">{text}</p>
+
+                <h3 className="text-2xl font-black mb-4">
+                  {title}
+                </h3>
+
+                <p className="text-lg text-slate-600 leading-relaxed">
+                  {text}
+                </p>
+
               </div>
+
             ))}
+
           </div>
+
         </div>
+
       </section>
 
       <section id="flokkar" className="bg-white py-24">
-        <div className="mx-auto max-w-6xl px-6">
-          <h2 className="text-4xl font-black tracking-tight lg:text-5xl">Vinsælir flokkar</h2>
-          <p className="mt-4 text-xl text-slate-600">Veldu þann flokk sem passar best við verkefnið.</p>
 
-          <div className="mt-12 grid grid-cols-2 gap-5 md:grid-cols-4">
+        <div className="max-w-6xl mx-auto px-6">
+
+          <div className="mb-14">
+
+            <h2 className="text-4xl lg:text-5xl font-black tracking-tight">
+              Vinsælir flokkar
+            </h2>
+
+            <p className="text-xl text-slate-600 mt-4">
+              Veldu flokk sem passar við verkefnið þitt.
+            </p>
+
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
+
             {categories.map((category) => (
-              <div className="rounded-3xl border border-slate-200 bg-slate-50 p-6 text-center text-lg font-black transition hover:border-blue-500 hover:bg-white hover:shadow-xl" key={category}>
+
+              <div
+                key={category}
+                className="rounded-3xl border border-slate-200 bg-slate-50 p-6 text-center text-lg font-black transition hover:border-blue-500 hover:bg-white hover:shadow-xl"
+              >
                 {category}
               </div>
+
             ))}
-          </div>
-        </div>
-      </section>
 
-      <section id="form" className="py-24">
-        <div className="mx-auto grid max-w-7xl gap-12 px-6 lg:grid-cols-2">
-          <div>
-            <h2 className="text-4xl font-black tracking-tight lg:text-5xl">Settu inn verkefni</h2>
-            <p className="mt-5 max-w-xl text-xl leading-relaxed text-slate-600">
-              Þetta er fyrsta útgáfa formsins. Næsta skref er að tengja það við gagnagrunn og tölvupóst.
-            </p>
           </div>
 
-          <form className="rounded-[36px] border border-slate-200 bg-white p-7 shadow-2xl">
-            <div className="grid gap-5">
-              <input className="rounded-2xl border border-slate-300 px-5 py-4 outline-none focus:border-blue-600" placeholder="Hvað þarf að gera?" />
-              <div className="grid gap-5 md:grid-cols-2">
-                <select className="rounded-2xl border border-slate-300 px-5 py-4 outline-none focus:border-blue-600">
-                  {categories.map(c => <option key={c}>{c}</option>)}
-                </select>
-                <input className="rounded-2xl border border-slate-300 px-5 py-4 outline-none focus:border-blue-600" placeholder="Staðsetning" />
-              </div>
-              <textarea className="min-h-32 rounded-2xl border border-slate-300 px-5 py-4 outline-none focus:border-blue-600" placeholder="Lýstu verkefninu..." />
-              <div className="grid gap-5 md:grid-cols-2">
-                <input className="rounded-2xl border border-slate-300 px-5 py-4 outline-none focus:border-blue-600" placeholder="Nafn" />
-                <input className="rounded-2xl border border-slate-300 px-5 py-4 outline-none focus:border-blue-600" placeholder="Sími eða netfang" />
-              </div>
-              <button type="button" className="rounded-2xl bg-blue-600 px-6 py-5 text-lg font-black text-white shadow-xl hover:bg-blue-700">
-                Senda verkefni
-              </button>
-            </div>
-          </form>
         </div>
+
       </section>
 
       <section id="fyrirtaeki" className="py-24">
-        <div className="mx-auto max-w-6xl px-6">
-          <div className="rounded-[44px] bg-slate-950 p-10 text-white shadow-2xl lg:p-16">
-            <div className="grid items-center gap-12 lg:grid-cols-2">
+
+        <div className="max-w-6xl mx-auto px-6">
+
+          <div className="rounded-[44px] bg-slate-950 p-10 lg:p-16 text-white shadow-2xl">
+
+            <div className="grid lg:grid-cols-2 gap-12 items-center">
+
               <div>
-                <h2 className="text-4xl font-black tracking-tight lg:text-5xl">Ertu með fyrirtæki?</h2>
-                <p className="mt-6 text-xl leading-relaxed text-slate-300">
+
+                <h2 className="text-4xl lg:text-5xl font-black tracking-tight">
+                  Ertu með fyrirtæki?
+                </h2>
+
+                <p className="text-xl text-slate-300 mt-6 leading-relaxed">
                   Skráðu fyrirtækið í beta og fáðu aðgang að verkefnum frá fólki sem vantar þjónustu.
                 </p>
+
               </div>
 
-              <div className="rounded-[32px] bg-white p-7 text-slate-950">
+              <div className="rounded-[32px] bg-white p-7 text-slate-900">
+
                 <div className="grid gap-5">
-                  <input className="rounded-2xl border border-slate-300 px-5 py-4 outline-none focus:border-blue-600" placeholder="Nafn fyrirtækis" />
-                  <input className="rounded-2xl border border-slate-300 px-5 py-4 outline-none focus:border-blue-600" placeholder="Netfang eða sími" />
-                  <button className="rounded-2xl bg-blue-600 px-6 py-5 text-lg font-black text-white hover:bg-blue-700" type="button">
-                    Skrá fyrirtæki í beta
+
+                  <input
+                    className="rounded-2xl border border-slate-300 px-5 py-4 outline-none focus:border-blue-600"
+                    placeholder="Nafn fyrirtækis"
+                  />
+
+                  <input
+                    className="rounded-2xl border border-slate-300 px-5 py-4 outline-none focus:border-blue-600"
+                    placeholder="Netfang eða sími"
+                  />
+
+                  <button className="rounded-2xl bg-blue-600 hover:bg-blue-700 transition px-6 py-5 text-lg font-black text-white">
+                    Skrá fyrirtæki
                   </button>
+
                 </div>
+
               </div>
+
             </div>
+
           </div>
+
         </div>
+
       </section>
 
       <footer className="border-t border-slate-200 bg-white py-10">
-        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-6 md:flex-row">
+
+        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
+
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-600 font-black text-white">V</div>
-            <div className="text-2xl font-black tracking-tight">Verktilboð<span className="text-blue-600">.is</span></div>
+
+            <div className="w-10 h-10 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-black">
+              V
+            </div>
+
+            <div className="text-2xl font-black tracking-tight">
+              Verktilbod<span className="text-blue-600">.is</span>
+            </div>
+
           </div>
-          <div className="text-sm text-slate-500">© 2026 Verktilboð — Sendu inn verk. Fáðu tilboð.</div>
+
+          <div className="text-sm text-slate-500">
+            © 2026 Verktilbod — Sendu inn verk. Fáðu tilboð.
+          </div>
+
         </div>
+
       </footer>
+
     </div>
   );
 }
 
-ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<App />);
+
   </script>
 </body>
 </html>
