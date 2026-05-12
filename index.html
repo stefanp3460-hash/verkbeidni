@@ -262,6 +262,72 @@ function App() {
     loadOffers()
   }
 
+  async function deleteProject(projectId) {
+    const confirmed = confirm("Ertu viss um að þú viljir eyða þessu verkefni? Öll tilboð tengd verkefninu eyðast líka.")
+
+    if (!confirmed) return
+
+    await supabase
+      .from("tilbod")
+      .delete()
+      .eq("project_id", projectId)
+
+    const { error } = await supabase
+      .from("verkefni")
+      .delete()
+      .eq("id", projectId)
+
+    if (error) {
+      console.log(error)
+      alert("Villa kom upp við að eyða verkefni.")
+      return
+    }
+
+    alert("Verkefni eytt.")
+    loadProjects()
+    loadOffers()
+  }
+
+  async function deleteCompany(companyId) {
+    const confirmed = confirm("Ertu viss um að þú viljir eyða þessu fyrirtæki?")
+
+    if (!confirmed) return
+
+    const { error } = await supabase
+      .from("fyrirtaeki")
+      .delete()
+      .eq("id", companyId)
+
+    if (error) {
+      console.log(error)
+      alert("Villa kom upp við að eyða fyrirtæki.")
+      return
+    }
+
+    alert("Fyrirtæki eytt.")
+    loadCompanies()
+  }
+
+  async function deleteOffer(offerId) {
+    const confirmed = confirm("Ertu viss um að þú viljir eyða þessu tilboði?")
+
+    if (!confirmed) return
+
+    const { error } = await supabase
+      .from("tilbod")
+      .delete()
+      .eq("id", offerId)
+
+    if (error) {
+      console.log(error)
+      alert("Villa kom upp við að eyða tilboði.")
+      return
+    }
+
+    alert("Tilboði eytt.")
+    loadOffers()
+  }
+
   function loginAdmin() {
     if (adminPassword === ADMIN_PASSWORD) {
       setAdminLoggedIn(true)
@@ -614,6 +680,13 @@ function App() {
                         <div className="mt-2 text-sm font-bold text-blue-700">
                           📞 {project.contact}
                         </div>
+
+                        <button
+                          onClick={() => deleteProject(project.id)}
+                          className="mt-5 rounded-2xl bg-red-600 px-4 py-3 text-sm font-black text-white hover:bg-red-700 transition"
+                        >
+                          Eyða verkefni
+                        </button>
                       </div>
                     ))}
                   </div>
@@ -634,6 +707,13 @@ function App() {
                         <div className="mt-3 text-sm text-slate-500">
                           📞 {company.contact}
                         </div>
+
+                        <button
+                          onClick={() => deleteCompany(company.id)}
+                          className="mt-5 rounded-2xl bg-red-600 px-4 py-3 text-sm font-black text-white hover:bg-red-700 transition"
+                        >
+                          Eyða fyrirtæki
+                        </button>
                       </div>
                     ))}
                   </div>
@@ -665,6 +745,13 @@ function App() {
                           <div className="mt-3 text-sm text-slate-500">
                             📞 {offer.contact}
                           </div>
+
+                          <button
+                            onClick={() => deleteOffer(offer.id)}
+                            className="mt-5 rounded-2xl bg-red-600 px-4 py-3 text-sm font-black text-white hover:bg-red-700 transition"
+                          >
+                            Eyða tilboði
+                          </button>
                         </div>
                       )
                     })}
