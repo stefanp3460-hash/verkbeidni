@@ -3,9 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
   <title>Verktilbod.is | Fáðu tilboð í verk</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -28,7 +31,23 @@
 
   <script type="text/babel">
 
+const supabaseUrl = "https://nudrlkgxpsifoancrllp.supabase.co"
+
+const supabaseKey = "sb_publishable_Y8Sum5qb52uoBH4IoXCt2Q_Z80QEEqs"
+
+const supabase = window.supabase.createClient(
+  supabaseUrl,
+  supabaseKey
+)
+
 function App() {
+
+  const [title, setTitle] = React.useState("")
+  const [category, setCategory] = React.useState("")
+  const [description, setDescription] = React.useState("")
+  const [location, setLocation] = React.useState("")
+  const [contact, setContact] = React.useState("")
+  const [loading, setLoading] = React.useState(false)
 
   const categories = [
     "Smíði",
@@ -43,7 +62,45 @@ function App() {
     "Fasteignaþjónusta",
     "Þakvinna",
     "Annað"
-  ];
+  ]
+
+  async function submitProject() {
+
+    if (!title || !description || !contact) {
+      alert("Vinsamlegast fylltu út nauðsynlegar upplýsingar.")
+      return
+    }
+
+    setLoading(true)
+
+    const { error } = await supabase
+      .from("verkefni")
+      .insert([
+        {
+          title,
+          category,
+          description,
+          location,
+          contact
+        }
+      ])
+
+    setLoading(false)
+
+    if (error) {
+      console.log(error)
+      alert("Villa kom upp við að senda verkefni.")
+      return
+    }
+
+    alert("Verkefni sent inn!")
+
+    setTitle("")
+    setCategory("")
+    setDescription("")
+    setLocation("")
+    setContact("")
+  }
 
   return (
     <div className="min-h-screen text-slate-900">
@@ -78,10 +135,6 @@ function App() {
               Fyrirtæki
             </a>
 
-            <button className="bg-blue-600 hover:bg-blue-700 transition text-white px-5 py-3 rounded-2xl shadow-lg">
-              Setja inn verkefni
-            </button>
-
           </div>
 
         </div>
@@ -112,97 +165,71 @@ function App() {
               Settu inn verkefni og fáðu tilboð frá þjónustuaðilum á þínu svæði.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 mt-10">
-
-              <button className="bg-blue-600 hover:bg-blue-700 transition text-white px-8 py-5 rounded-2xl text-lg font-black shadow-xl">
-                Setja inn verkefni
-              </button>
-
-              <button className="border border-slate-300 bg-white hover:border-slate-500 transition px-8 py-5 rounded-2xl text-lg font-black">
-                Skrá fyrirtæki
-              </button>
-
-            </div>
-
-            <div className="grid grid-cols-2 gap-4 mt-10 text-sm font-semibold text-slate-600 max-w-xl">
-              <div>✓ Tilboð frá fleiri aðilum</div>
-              <div>✓ Fljótlegt og einfalt</div>
-              <div>✓ Fyrir öll almenn verk</div>
-              <div>✓ Beta útgáfa í þróun</div>
-            </div>
-
           </div>
 
           <div className="rounded-[40px] border border-slate-200 bg-slate-50 p-5 shadow-2xl">
 
             <div className="rounded-[32px] bg-white p-7 shadow-sm">
 
-              <div className="flex items-center justify-between mb-6">
+              <h2 className="text-3xl font-black mb-6">
+                Setja inn verkefni
+              </h2>
 
-                <div>
-                  <h3 className="text-2xl font-black">
-                    Nýtt verkefni
-                  </h3>
+              <div className="space-y-5">
 
-                  <p className="text-slate-500">
-                    Reykjanesbær · Málun
-                  </p>
-                </div>
+                <input
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="w-full rounded-2xl border border-slate-300 px-5 py-4 outline-none focus:border-blue-600"
+                  placeholder="Hvað þarf að gera?"
+                />
 
-                <span className="rounded-full bg-green-100 px-4 py-2 text-sm font-black text-green-700">
-                  Opið
-                </span>
+                <select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  className="w-full rounded-2xl border border-slate-300 px-5 py-4 outline-none focus:border-blue-600"
+                >
 
-              </div>
+                  <option value="">
+                    Veldu flokk
+                  </option>
 
-              <div className="rounded-3xl bg-slate-50 p-6">
+                  {categories.map((category) => (
+                    <option key={category}>
+                      {category}
+                    </option>
+                  ))}
 
-                <h4 className="text-xl font-black">
-                  Vantar að mála 120 fm hús að utan.
-                </h4>
+                </select>
 
-                <p className="text-slate-600 mt-3">
-                  Óska eftir verði og tímaramma.
-                </p>
+                <textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className="w-full min-h-36 rounded-2xl border border-slate-300 px-5 py-4 outline-none focus:border-blue-600"
+                  placeholder="Lýstu verkefninu..."
+                />
 
-              </div>
+                <input
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  className="w-full rounded-2xl border border-slate-300 px-5 py-4 outline-none focus:border-blue-600"
+                  placeholder="Staðsetning"
+                />
 
-              <div className="space-y-4 mt-7">
+                <input
+                  value={contact}
+                  onChange={(e) => setContact(e.target.value)}
+                  className="w-full rounded-2xl border border-slate-300 px-5 py-4 outline-none focus:border-blue-600"
+                  placeholder="Sími eða netfang"
+                />
 
-                {[
-                  ["Norður Málun", "Getum hafið næstu viku", "520.000 kr"],
-                  ["Bláfell Verk", "Lausir eftir 10 daga", "485.000 kr"],
-                  ["Reykjanes Þjónusta", "Tilboð eftir skoðun", "Skoðun fyrst"]
-                ].map(([name, desc, price]) => (
-
-                  <div
-                    key={name}
-                    className="flex items-center justify-between rounded-3xl border border-slate-200 p-5"
-                  >
-
-                    <div>
-                      <p className="font-black">
-                        {name}
-                      </p>
-
-                      <p className="text-sm text-slate-500">
-                        {desc}
-                      </p>
-                    </div>
-
-                    <div className="text-right">
-                      <p className="font-black">
-                        {price}
-                      </p>
-
-                      <p className="text-xs text-slate-500">
-                        Tilboð
-                      </p>
-                    </div>
-
-                  </div>
-
-                ))}
+                <button
+                  onClick={submitProject}
+                  disabled={loading}
+                  className="w-full rounded-2xl bg-blue-600 hover:bg-blue-700 transition px-6 py-5 text-lg font-black text-white shadow-xl"
+                >
+                  {loading ? "Sendi..." : "Senda verkefni"}
+                </button>
 
               </div>
 
@@ -265,121 +292,12 @@ function App() {
 
       </section>
 
-      <section id="flokkar" className="bg-white py-24">
-
-        <div className="max-w-6xl mx-auto px-6">
-
-          <div className="mb-14">
-
-            <h2 className="text-4xl lg:text-5xl font-black tracking-tight">
-              Vinsælir flokkar
-            </h2>
-
-            <p className="text-xl text-slate-600 mt-4">
-              Veldu flokk sem passar við verkefnið þitt.
-            </p>
-
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
-
-            {categories.map((category) => (
-
-              <div
-                key={category}
-                className="rounded-3xl border border-slate-200 bg-slate-50 p-6 text-center text-lg font-black transition hover:border-blue-500 hover:bg-white hover:shadow-xl"
-              >
-                {category}
-              </div>
-
-            ))}
-
-          </div>
-
-        </div>
-
-      </section>
-
-      <section id="fyrirtaeki" className="py-24">
-
-        <div className="max-w-6xl mx-auto px-6">
-
-          <div className="rounded-[44px] bg-slate-950 p-10 lg:p-16 text-white shadow-2xl">
-
-            <div className="grid lg:grid-cols-2 gap-12 items-center">
-
-              <div>
-
-                <h2 className="text-4xl lg:text-5xl font-black tracking-tight">
-                  Ertu með fyrirtæki?
-                </h2>
-
-                <p className="text-xl text-slate-300 mt-6 leading-relaxed">
-                  Skráðu fyrirtækið í beta og fáðu aðgang að verkefnum frá fólki sem vantar þjónustu.
-                </p>
-
-              </div>
-
-              <div className="rounded-[32px] bg-white p-7 text-slate-900">
-
-                <div className="grid gap-5">
-
-                  <input
-                    className="rounded-2xl border border-slate-300 px-5 py-4 outline-none focus:border-blue-600"
-                    placeholder="Nafn fyrirtækis"
-                  />
-
-                  <input
-                    className="rounded-2xl border border-slate-300 px-5 py-4 outline-none focus:border-blue-600"
-                    placeholder="Netfang eða sími"
-                  />
-
-                  <button className="rounded-2xl bg-blue-600 hover:bg-blue-700 transition px-6 py-5 text-lg font-black text-white">
-                    Skrá fyrirtæki
-                  </button>
-
-                </div>
-
-              </div>
-
-            </div>
-
-          </div>
-
-        </div>
-
-      </section>
-
-      <footer className="border-t border-slate-200 bg-white py-10">
-
-        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
-
-          <div className="flex items-center gap-3">
-
-            <div className="w-10 h-10 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-black">
-              V
-            </div>
-
-            <div className="text-2xl font-black tracking-tight">
-              Verktilbod<span className="text-blue-600">.is</span>
-            </div>
-
-          </div>
-
-          <div className="text-sm text-slate-500">
-            © 2026 Verktilbod — Sendu inn verk. Fáðu tilboð.
-          </div>
-
-        </div>
-
-      </footer>
-
     </div>
-  );
+  )
 }
 
-const root = ReactDOM.createRoot(document.getElementById("root"));
-root.render(<App />);
+const root = ReactDOM.createRoot(document.getElementById("root"))
+root.render(<App />)
 
   </script>
 </body>
