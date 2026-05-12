@@ -52,8 +52,16 @@ function App() {
 
   const [projects, setProjects] = React.useState([])
 
+  const [companyName, setCompanyName] = React.useState("")
+  const [companyCategory, setCompanyCategory] = React.useState("")
+  const [companyContact, setCompanyContact] = React.useState("")
+  const [companyLoading, setCompanyLoading] = React.useState(false)
+
+  const [companies, setCompanies] = React.useState([])
+
   React.useEffect(() => {
     loadProjects()
+    loadCompanies()
   }, [])
 
   async function loadProjects() {
@@ -69,6 +77,21 @@ function App() {
     }
 
     setProjects(data)
+  }
+
+  async function loadCompanies() {
+
+    const { data, error } = await supabase
+      .from("fyrirtaeki")
+      .select("*")
+      .order("created_at", { ascending: false })
+
+    if (error) {
+      console.log(error)
+      return
+    }
+
+    setCompanies(data)
   }
 
   const categories = [
@@ -126,6 +149,42 @@ function App() {
     loadProjects()
   }
 
+  async function submitCompany() {
+
+    if (!companyName || !companyContact) {
+      alert("Vinsamlegast fylltu út nauðsynlegar upplýsingar.")
+      return
+    }
+
+    setCompanyLoading(true)
+
+    const { error } = await supabase
+      .from("fyrirtaeki")
+      .insert([
+        {
+          company_name: companyName,
+          category: companyCategory,
+          contact: companyContact
+        }
+      ])
+
+    setCompanyLoading(false)
+
+    if (error) {
+      console.log(error)
+      alert("Villa kom upp við að skrá fyrirtæki.")
+      return
+    }
+
+    alert("Fyrirtæki skráð!")
+
+    setCompanyName("")
+    setCompanyCategory("")
+    setCompanyContact("")
+
+    loadCompanies()
+  }
+
   return (
     <div className="min-h-screen text-slate-900">
 
@@ -159,6 +218,10 @@ function App() {
               Fyrirtæki
             </a>
 
+            <a href="#admin" className="hover:text-blue-600 transition">
+              Admin
+            </a>
+
           </div>
 
         </div>
@@ -188,13 +251,6 @@ function App() {
               Verktilbod tengir einstaklinga og fyrirtæki við fagmenn.
               Settu inn verkefni og fáðu tilboð frá þjónustuaðilum á þínu svæði.
             </p>
-
-            <div className="grid grid-cols-2 gap-4 mt-10 text-sm font-semibold text-slate-600 max-w-xl">
-              <div>✓ Tilboð frá fleiri aðilum</div>
-              <div>✓ Fljótlegt og einfalt</div>
-              <div>✓ Fyrir öll almenn verk</div>
-              <div>✓ Live verkefni</div>
-            </div>
 
           </div>
 
@@ -273,60 +329,6 @@ function App() {
       </section>
 
       <section
-        id="how"
-        className="py-24"
-      >
-
-        <div className="max-w-6xl mx-auto px-6">
-
-          <div className="text-center mb-16">
-
-            <h2 className="text-4xl lg:text-5xl font-black tracking-tight">
-              Hvernig virkar þetta?
-            </h2>
-
-            <p className="text-xl text-slate-600 mt-4">
-              Þrjú einföld skref frá verkefni yfir í tilboð.
-            </p>
-
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-
-            {[
-              ["1", "Settu inn verkefni", "Lýstu verkefninu og bættu við upplýsingum."],
-              ["2", "Fáðu tilboð", "Fyrirtæki senda verð og upplýsingar."],
-              ["3", "Veldu aðila", "Berðu saman tilboð og veldu réttan aðila."]
-            ].map(([number, title, text]) => (
-
-              <div
-                key={number}
-                className="rounded-[32px] border border-slate-200 bg-white p-8 shadow-sm"
-              >
-
-                <div className="w-14 h-14 rounded-2xl bg-blue-600 text-white flex items-center justify-center text-xl font-black mb-6">
-                  {number}
-                </div>
-
-                <h3 className="text-2xl font-black mb-4">
-                  {title}
-                </h3>
-
-                <p className="text-lg text-slate-600 leading-relaxed">
-                  {text}
-                </p>
-
-              </div>
-
-            ))}
-
-          </div>
-
-        </div>
-
-      </section>
-
-      <section
         id="projects"
         className="py-24 bg-white border-t border-slate-200"
       >
@@ -346,22 +348,6 @@ function App() {
           </div>
 
           <div className="grid gap-6">
-
-            {projects.length === 0 && (
-
-              <div className="rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-12 text-center">
-
-                <h3 className="text-2xl font-black mb-3">
-                  Engin verkefni ennþá
-                </h3>
-
-                <p className="text-slate-600">
-                  Vertu fyrstur til að senda inn verkefni.
-                </p>
-
-              </div>
-
-            )}
 
             {projects.map((project) => (
 
@@ -394,8 +380,8 @@ function App() {
                       📍 {project.location || "Óskráð"}
                     </div>
 
-                    <div>
-                      📞 {project.contact}
+                    <div className="font-bold text-green-700">
+                      Tilboð í boði
                     </div>
 
                   </div>
@@ -440,17 +426,43 @@ function App() {
                 <div className="grid gap-5">
 
                   <input
+                    value={companyName}
+                    onChange={(e) => setCompanyName(e.target.value)}
                     className="rounded-2xl border border-slate-300 px-5 py-4 outline-none focus:border-blue-600"
                     placeholder="Nafn fyrirtækis"
                   />
 
+                  <select
+                    value={companyCategory}
+                    onChange={(e) => setCompanyCategory(e.target.value)}
+                    className="rounded-2xl border border-slate-300 px-5 py-4 outline-none focus:border-blue-600"
+                  >
+
+                    <option value="">
+                      Veldu flokk
+                    </option>
+
+                    {categories.map((category) => (
+                      <option key={category}>
+                        {category}
+                      </option>
+                    ))}
+
+                  </select>
+
                   <input
+                    value={companyContact}
+                    onChange={(e) => setCompanyContact(e.target.value)}
                     className="rounded-2xl border border-slate-300 px-5 py-4 outline-none focus:border-blue-600"
                     placeholder="Netfang eða sími"
                   />
 
-                  <button className="rounded-2xl bg-blue-600 hover:bg-blue-700 transition px-6 py-5 text-lg font-black text-white">
-                    Skrá fyrirtæki
+                  <button
+                    onClick={submitCompany}
+                    disabled={companyLoading}
+                    className="rounded-2xl bg-blue-600 hover:bg-blue-700 transition px-6 py-5 text-lg font-black text-white"
+                  >
+                    {companyLoading ? "Skrái..." : "Skrá fyrirtæki"}
                   </button>
 
                 </div>
@@ -465,29 +477,106 @@ function App() {
 
       </section>
 
-      <footer className="border-t border-slate-200 bg-white py-10">
+      <section
+        id="admin"
+        className="py-24 bg-white border-t border-slate-200"
+      >
 
-        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="max-w-6xl mx-auto px-6">
 
-          <div className="flex items-center gap-3">
+          <div className="mb-14">
 
-            <div className="w-10 h-10 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-black">
-              V
-            </div>
+            <h2 className="text-4xl font-black tracking-tight">
+              Admin Dashboard
+            </h2>
 
-            <div className="text-2xl font-black tracking-tight">
-              Verktilbod<span className="text-blue-600">.is</span>
-            </div>
+            <p className="text-slate-600 text-lg mt-3">
+              Aðeins fyrir eiganda síðunnar.
+            </p>
 
           </div>
 
-          <div className="text-sm text-slate-500">
-            © 2026 Verktilbod — Sendu inn verk. Fáðu tilboð.
+          <div className="grid lg:grid-cols-2 gap-10">
+
+            <div>
+
+              <h3 className="text-2xl font-black mb-6">
+                Verkefni
+              </h3>
+
+              <div className="space-y-5">
+
+                {projects.map((project) => (
+
+                  <div
+                    key={project.id}
+                    className="rounded-3xl border border-slate-200 bg-slate-50 p-6"
+                  >
+
+                    <h4 className="text-xl font-black">
+                      {project.title}
+                    </h4>
+
+                    <p className="text-slate-600 mt-3">
+                      {project.description}
+                    </p>
+
+                    <div className="mt-4 text-sm text-slate-500">
+                      📍 {project.location}
+                    </div>
+
+                    <div className="mt-2 text-sm font-bold text-blue-700">
+                      📞 {project.contact}
+                    </div>
+
+                  </div>
+
+                ))}
+
+              </div>
+
+            </div>
+
+            <div>
+
+              <h3 className="text-2xl font-black mb-6">
+                Fyrirtæki
+              </h3>
+
+              <div className="space-y-5">
+
+                {companies.map((company) => (
+
+                  <div
+                    key={company.id}
+                    className="rounded-3xl border border-slate-200 bg-slate-50 p-6"
+                  >
+
+                    <h4 className="text-xl font-black">
+                      {company.company_name}
+                    </h4>
+
+                    <div className="mt-3 text-sm text-blue-700 font-bold">
+                      {company.category || "Óskráð"}
+                    </div>
+
+                    <div className="mt-3 text-sm text-slate-500">
+                      📞 {company.contact}
+                    </div>
+
+                  </div>
+
+                ))}
+
+              </div>
+
+            </div>
+
           </div>
 
         </div>
 
-      </footer>
+      </section>
 
     </div>
   )
