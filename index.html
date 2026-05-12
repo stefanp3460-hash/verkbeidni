@@ -38,6 +38,12 @@ function App() {
   const [adminPassword, setAdminPassword] = React.useState("")
   const [adminLoggedIn, setAdminLoggedIn] = React.useState(false)
 
+  const [user, setUser] = React.useState(null)
+  const [authEmail, setAuthEmail] = React.useState("")
+  const [authPassword, setAuthPassword] = React.useState("")
+  const [authMode, setAuthMode] = React.useState("login")
+  const [authLoading, setAuthLoading] = React.useState(false)
+
   const [title, setTitle] = React.useState("")
   const [category, setCategory] = React.useState("")
   const [description, setDescription] = React.useState("")
@@ -81,6 +87,7 @@ function App() {
   ]
 
   React.useEffect(() => {
+    loadSession()
     loadProjects()
     loadCompanies()
     loadOffers()
@@ -90,8 +97,21 @@ function App() {
     }
 
     window.addEventListener("hashchange", handleHashChange)
-    return () => window.removeEventListener("hashchange", handleHashChange)
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user || null)
+    })
+
+    return () => {
+      window.removeEventListener("hashchange", handleHashChange)
+      authListener.subscription.unsubscribe()
+    }
   }, [])
+
+  async function loadSession() {
+    const { data } = await supabase.auth.getSession()
+    setUser(data.session?.user || null)
+  }
 
   async function loadProjects() {
     const { data, error } = await supabase
@@ -133,6 +153,57 @@ function App() {
     }
 
     setOffers(data || [])
+  }
+
+  async function handleAuth() {
+    if (!authEmail || !authPassword) {
+      alert("Settu inn netfang og lykilorð.")
+      return
+    }
+
+    setAuthLoading(true)
+
+    if (authMode === "signup") {
+      const { error } = await supabase.auth.signUp({
+        email: authEmail,
+        password: authPassword
+      })
+
+      setAuthLoading(false)
+
+      if (error) {
+        console.log(error)
+        alert("Villa við nýskráningu.")
+        return
+      }
+
+      alert("Aðgangur stofnaður. Þú getur nú skráð fyrirtækið þitt.")
+      setAuthEmail("")
+      setAuthPassword("")
+      return
+    }
+
+    const { error } = await supabase.auth.signInWithPassword({
+      email: authEmail,
+      password: authPassword
+    })
+
+    setAuthLoading(false)
+
+    if (error) {
+      console.log(error)
+      alert("Rangt netfang eða lykilorð.")
+      return
+    }
+
+    alert("Innskráning tókst.")
+    setAuthEmail("")
+    setAuthPassword("")
+  }
+
+  async function logout() {
+    await supabase.auth.signOut()
+    setUser(null)
   }
 
   async function uploadImage() {
@@ -207,6 +278,11 @@ function App() {
       return
     }
 
+    if (!user) {
+      alert("Þú þarft að skrá þig inn eða stofna aðgang áður en þú skráir fyrirtæki.")
+      return
+    }
+
     setCompanyLoading(true)
 
     const { error } = await supabase
@@ -216,7 +292,8 @@ function App() {
           company_name: companyName,
           category: companyCategory,
           contact: companyContact,
-          verified: false
+          verified: false,
+          user_id: user.id
         }
       ])
 
@@ -253,7 +330,8 @@ function App() {
           company_name: offerCompanyName,
           price: offerPrice,
           message: offerMessage,
-          contact: offerContact
+          contact: offerContact,
+          user_id: user ? user.id : null
         }
       ])
 
@@ -381,6 +459,14 @@ function App() {
 
     return categoryMatch && locationMatch
   })
+
+  const myCompanies = user
+    ? companies.filter((company) => company.user_id === user.id)
+    : []
+
+  const myOffers = user
+    ? offers.filter((offer) => offer.user_id === user.id)
+    : []
 
   if (isAdminPage) {
     return (
@@ -539,6 +625,9 @@ function App() {
           <div className="hidden md:flex items-center gap-8 text-sm font-bold">
             <a href="#projects" className="hover:text-blue-600 transition">Verkefni</a>
             <a href="#fyrirtaeki" className="hover:text-blue-600 transition">Fyrirtæki</a>
+            <a href="#login" className="hover:text-blue-600 transition">
+              {user ? "Dashboard" : "Innskráning"}
+            </a>
           </div>
         </div>
       </nav>
@@ -565,7 +654,7 @@ function App() {
               <div>✓ Verkefni vistast sjálfkrafa</div>
               <div>✓ Fyrirtæki geta sent tilboð</div>
               <div>✓ Myndir af verkefnum</div>
-              <div>✓ Verified fyrirtæki</div>
+              <div>✓ Fyrirtækja dashboard</div>
             </div>
           </div>
 
@@ -702,6 +791,12 @@ function App() {
                   <div className="mt-7 rounded-3xl border border-slate-200 bg-white p-6">
                     <h4 className="text-xl font-black mb-5">Senda tilboð í þetta verkefni</h4>
 
+                    {!user && (
+                      <div className="mb-5 rounded-2xl bg-yellow-50 border border-yellow-200 p-4 text-sm font-bold text-yellow-800">
+                        Þú getur sent tilboð án innskráningar, en ef þú skráir þig inn þá vistast tilboðið undir fyrirtækja dashboardinu þínu.
+                      </div>
+                    )}
+
                     <div className="grid gap-4">
                       <input
                         value={offerCompanyName}
@@ -747,19 +842,145 @@ function App() {
         </div>
       </section>
 
-      <section id="fyrirtaeki" className="py-24">
+      <section id="login" className="py-24">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="grid lg:grid-cols-2 gap-10 items-start">
+            <div>
+              <h2 className="text-4xl lg:text-5xl font-black tracking-tight">
+                Fyrirtækjaaðgangur
+              </h2>
+              <p className="text-xl text-slate-600 mt-6 leading-relaxed">
+                Skráðu þig inn til að sjá þín fyrirtæki og þín tilboð.
+              </p>
+            </div>
+
+            <div className="rounded-[32px] border border-slate-200 bg-white p-7 shadow-sm">
+              {!user ? (
+                <div>
+                  <h3 className="text-2xl font-black mb-6">
+                    {authMode === "login" ? "Innskráning" : "Stofna aðgang"}
+                  </h3>
+
+                  <div className="grid gap-5">
+                    <input
+                      value={authEmail}
+                      onChange={(e) => setAuthEmail(e.target.value)}
+                      className="rounded-2xl border border-slate-300 px-5 py-4 outline-none focus:border-blue-600"
+                      placeholder="Netfang"
+                    />
+
+                    <input
+                      type="password"
+                      value={authPassword}
+                      onChange={(e) => setAuthPassword(e.target.value)}
+                      className="rounded-2xl border border-slate-300 px-5 py-4 outline-none focus:border-blue-600"
+                      placeholder="Lykilorð"
+                    />
+
+                    <button
+                      onClick={handleAuth}
+                      disabled={authLoading}
+                      className="rounded-2xl bg-blue-600 hover:bg-blue-700 transition px-6 py-5 text-lg font-black text-white"
+                    >
+                      {authLoading ? "Augnablik..." : authMode === "login" ? "Innskrá" : "Stofna aðgang"}
+                    </button>
+
+                    <button
+                      onClick={() => setAuthMode(authMode === "login" ? "signup" : "login")}
+                      className="text-sm font-bold text-blue-700"
+                    >
+                      {authMode === "login" ? "Ég vil stofna aðgang" : "Ég er nú þegar með aðgang"}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <h3 className="text-2xl font-black mb-3">Þú ert skráður inn</h3>
+                  <p className="text-slate-600 mb-6">{user.email}</p>
+
+                  <button
+                    onClick={logout}
+                    className="rounded-2xl bg-slate-950 px-6 py-4 font-black text-white hover:bg-slate-800 transition"
+                  >
+                    Skrá út
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {user && (
+            <div className="mt-14 grid lg:grid-cols-2 gap-10">
+              <div className="rounded-[32px] border border-slate-200 bg-white p-7 shadow-sm">
+                <h3 className="text-2xl font-black mb-6">Mín fyrirtæki</h3>
+
+                {myCompanies.length === 0 && (
+                  <p className="text-slate-600">Þú hefur ekki skráð fyrirtæki ennþá.</p>
+                )}
+
+                <div className="space-y-5">
+                  {myCompanies.map((company) => (
+                    <div key={company.id} className="rounded-3xl bg-slate-50 border border-slate-200 p-6">
+                      <div className="text-sm font-black text-green-700 mb-3">
+                        {company.verified ? "✅ Verified" : "Í skoðun"}
+                      </div>
+                      <h4 className="text-xl font-black">{company.company_name}</h4>
+                      <p className="mt-2 text-sm font-bold text-blue-700">{company.category || "Óskráð"}</p>
+                      <p className="mt-2 text-sm text-slate-500">{company.contact}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="rounded-[32px] border border-slate-200 bg-white p-7 shadow-sm">
+                <h3 className="text-2xl font-black mb-6">Mín tilboð</h3>
+
+                {myOffers.length === 0 && (
+                  <p className="text-slate-600">Þú hefur ekki sent nein tilboð ennþá.</p>
+                )}
+
+                <div className="space-y-5">
+                  {myOffers.map((offer) => {
+                    const project = projects.find((p) => p.id === offer.project_id)
+
+                    return (
+                      <div key={offer.id} className="rounded-3xl bg-slate-50 border border-slate-200 p-6">
+                        <div className="text-sm font-bold text-blue-700 mb-3">
+                          {project ? project.title : "Óþekkt verkefni"}
+                        </div>
+
+                        <h4 className="text-xl font-black">{offer.company_name}</h4>
+                        <p className="mt-2 text-2xl font-black text-green-700">{offer.price}</p>
+                        <p className="mt-3 text-slate-600">{offer.message || "Engin skilaboð"}</p>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
+
+      <section id="fyrirtaeki" className="py-24 bg-white border-t border-slate-200">
         <div className="max-w-6xl mx-auto px-6">
           <div className="rounded-[44px] bg-slate-950 p-10 lg:p-16 text-white shadow-2xl">
             <div className="grid lg:grid-cols-2 gap-12 items-center">
               <div>
                 <h2 className="text-4xl lg:text-5xl font-black tracking-tight">Ertu með fyrirtæki?</h2>
                 <p className="text-xl text-slate-300 mt-6 leading-relaxed">
-                  Skráðu fyrirtækið í beta og fáðu aðgang að verkefnum frá fólki sem vantar þjónustu.
+                  Stofnaðu aðgang, skráðu fyrirtækið og fáðu aðgang að verkefnum.
                 </p>
               </div>
 
               <div className="rounded-[32px] bg-white p-7 text-slate-900">
                 <div className="grid gap-5">
+                  {!user && (
+                    <div className="rounded-2xl bg-yellow-50 border border-yellow-200 p-4 text-sm font-bold text-yellow-800">
+                      Þú þarft að vera skráður inn til að skrá fyrirtæki.
+                    </div>
+                  )}
+
                   <input
                     value={companyName}
                     onChange={(e) => setCompanyName(e.target.value)}
