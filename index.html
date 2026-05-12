@@ -8,6 +8,7 @@
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -33,6 +34,8 @@ const supabase = window.supabase.createClient(
   supabaseUrl,
   supabaseKey
 )
+
+emailjs.init("XsALRkOWypPfzP05T")
 
 function App() {
   const ADMIN_PASSWORD = "verktilbod2026"
@@ -228,6 +231,26 @@ function App() {
       return
     }
 
+    try {
+      await emailjs.send(
+        "service_p90mrr8",
+        "template_6fp7aiu",
+        {
+          title: "Nýtt tilboð á verkefni",
+          name: offerCompanyName,
+          email: offerContact,
+          message:
+            "Nýtt tilboð hefur verið sent inn á Verktilbod.is\n\n" +
+            "Fyrirtæki: " + offerCompanyName + "\n" +
+            "Verð: " + offerPrice + "\n" +
+            "Sími/netfang: " + offerContact + "\n\n" +
+            "Skilaboð:\n" + (offerMessage || "Engin skilaboð")
+        }
+      )
+    } catch (emailError) {
+      console.log("EmailJS villa:", emailError)
+    }
+
     alert("Tilboð sent inn!")
 
     setOfferCompanyName("")
@@ -298,8 +321,8 @@ function App() {
             <div className="grid grid-cols-2 gap-4 mt-10 text-sm font-semibold text-slate-600 max-w-xl">
               <div>✓ Verkefni vistast sjálfkrafa</div>
               <div>✓ Fyrirtæki geta sent tilboð</div>
+              <div>✓ Email notification</div>
               <div>✓ Admin yfirsýn</div>
-              <div>✓ Beta útgáfa í þróun</div>
             </div>
           </div>
 
