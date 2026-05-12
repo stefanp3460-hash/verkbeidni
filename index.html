@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-
   <title>Verktilbod.is | Fáðu tilboð í verk</title>
+  <meta name="description" content="Settu inn verkefni og fáðu tilboð frá fyrirtækjum og fagmönnum á Íslandi." />
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -15,10 +15,7 @@
 
   <style>
     html { scroll-behavior: smooth; }
-    body {
-      font-family: Inter, system-ui, sans-serif;
-      background: #f8fafc;
-    }
+    body { font-family: Inter, system-ui, sans-serif; background: #f8fafc; }
   </style>
 </head>
 
@@ -30,16 +27,14 @@
 const supabaseUrl = "https://nudrlkgxpsifoancrllp.supabase.co"
 const supabaseKey = "sb_publishable_Y8Sum5qb52uoBH4IoXCt2Q_Z80QEEqs"
 
-const supabase = window.supabase.createClient(
-  supabaseUrl,
-  supabaseKey
-)
+const supabase = window.supabase.createClient(supabaseUrl, supabaseKey)
 
 emailjs.init("XsALRkOWypPfzP05T")
 
 function App() {
   const ADMIN_PASSWORD = "verktilbod2026"
 
+  const [isAdminPage, setIsAdminPage] = React.useState(window.location.hash === "#admin")
   const [adminPassword, setAdminPassword] = React.useState("")
   const [adminLoggedIn, setAdminLoggedIn] = React.useState(false)
 
@@ -48,6 +43,7 @@ function App() {
   const [description, setDescription] = React.useState("")
   const [location, setLocation] = React.useState("")
   const [contact, setContact] = React.useState("")
+  const [imageFile, setImageFile] = React.useState(null)
   const [loading, setLoading] = React.useState(false)
 
   const [projects, setProjects] = React.useState([])
@@ -65,6 +61,9 @@ function App() {
   const [offerMessage, setOfferMessage] = React.useState("")
   const [offerContact, setOfferContact] = React.useState("")
   const [offerLoading, setOfferLoading] = React.useState(false)
+
+  const [filterCategory, setFilterCategory] = React.useState("")
+  const [filterLocation, setFilterLocation] = React.useState("")
 
   const categories = [
     "Smíði",
@@ -85,6 +84,13 @@ function App() {
     loadProjects()
     loadCompanies()
     loadOffers()
+
+    function handleHashChange() {
+      setIsAdminPage(window.location.hash === "#admin")
+    }
+
+    window.addEventListener("hashchange", handleHashChange)
+    return () => window.removeEventListener("hashchange", handleHashChange)
   }, [])
 
   async function loadProjects() {
@@ -129,6 +135,29 @@ function App() {
     setOffers(data || [])
   }
 
+  async function uploadImage() {
+    if (!imageFile) return null
+
+    const fileExt = imageFile.name.split(".").pop()
+    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`
+
+    const { error } = await supabase.storage
+      .from("verkefni-myndir")
+      .upload(fileName, imageFile)
+
+    if (error) {
+      console.log(error)
+      alert("Mynd náði ekki að uploadast.")
+      return null
+    }
+
+    const { data } = supabase.storage
+      .from("verkefni-myndir")
+      .getPublicUrl(fileName)
+
+    return data.publicUrl
+  }
+
   async function submitProject() {
     if (!title || !description || !contact) {
       alert("Vinsamlegast fylltu út nauðsynlegar upplýsingar.")
@@ -136,6 +165,8 @@ function App() {
     }
 
     setLoading(true)
+
+    const imageUrl = await uploadImage()
 
     const { error } = await supabase
       .from("verkefni")
@@ -145,7 +176,8 @@ function App() {
           category,
           description,
           location,
-          contact
+          contact,
+          image_url: imageUrl
         }
       ])
 
@@ -164,6 +196,7 @@ function App() {
     setDescription("")
     setLocation("")
     setContact("")
+    setImageFile(null)
 
     loadProjects()
   }
@@ -182,7 +215,8 @@ function App() {
         {
           company_name: companyName,
           category: companyCategory,
-          contact: companyContact
+          contact: companyContact,
+          verified: false
         }
       ])
 
@@ -263,14 +297,9 @@ function App() {
   }
 
   async function deleteProject(projectId) {
-    const confirmed = confirm("Ertu viss um að þú viljir eyða þessu verkefni? Öll tilboð tengd verkefninu eyðast líka.")
+    if (!confirm("Eyða þessu verkefni? Öll tilboð tengd því eyðast líka.")) return
 
-    if (!confirmed) return
-
-    await supabase
-      .from("tilbod")
-      .delete()
-      .eq("project_id", projectId)
+    await supabase.from("tilbod").delete().eq("project_id", projectId)
 
     const { error } = await supabase
       .from("verkefni")
@@ -278,20 +307,16 @@ function App() {
       .eq("id", projectId)
 
     if (error) {
-      console.log(error)
       alert("Villa kom upp við að eyða verkefni.")
       return
     }
 
-    alert("Verkefni eytt.")
     loadProjects()
     loadOffers()
   }
 
   async function deleteCompany(companyId) {
-    const confirmed = confirm("Ertu viss um að þú viljir eyða þessu fyrirtæki?")
-
-    if (!confirmed) return
+    if (!confirm("Eyða þessu fyrirtæki?")) return
 
     const { error } = await supabase
       .from("fyrirtaeki")
@@ -299,19 +324,15 @@ function App() {
       .eq("id", companyId)
 
     if (error) {
-      console.log(error)
       alert("Villa kom upp við að eyða fyrirtæki.")
       return
     }
 
-    alert("Fyrirtæki eytt.")
     loadCompanies()
   }
 
   async function deleteOffer(offerId) {
-    const confirmed = confirm("Ertu viss um að þú viljir eyða þessu tilboði?")
-
-    if (!confirmed) return
+    if (!confirm("Eyða þessu tilboði?")) return
 
     const { error } = await supabase
       .from("tilbod")
@@ -319,13 +340,25 @@ function App() {
       .eq("id", offerId)
 
     if (error) {
-      console.log(error)
       alert("Villa kom upp við að eyða tilboði.")
       return
     }
 
-    alert("Tilboði eytt.")
     loadOffers()
+  }
+
+  async function toggleVerified(company) {
+    const { error } = await supabase
+      .from("fyrirtaeki")
+      .update({ verified: !company.verified })
+      .eq("id", company.id)
+
+    if (error) {
+      alert("Villa kom upp við að uppfæra verified.")
+      return
+    }
+
+    loadCompanies()
   }
 
   function loginAdmin() {
@@ -340,12 +373,159 @@ function App() {
     return offers.filter((offer) => offer.project_id === projectId)
   }
 
+  const filteredProjects = projects.filter((project) => {
+    const categoryMatch = filterCategory ? project.category === filterCategory : true
+    const locationMatch = filterLocation
+      ? (project.location || "").toLowerCase().includes(filterLocation.toLowerCase())
+      : true
+
+    return categoryMatch && locationMatch
+  })
+
+  if (isAdminPage) {
+    return (
+      <div className="min-h-screen bg-white text-slate-900">
+        <section className="py-20">
+          <div className="max-w-6xl mx-auto px-6">
+            {!adminLoggedIn ? (
+              <div className="max-w-md mx-auto rounded-[32px] border border-slate-200 bg-slate-50 p-8">
+                <h2 className="text-3xl font-black mb-6 text-center">Admin Login</h2>
+
+                <div className="space-y-4">
+                  <input
+                    type="password"
+                    value={adminPassword}
+                    onChange={(e) => setAdminPassword(e.target.value)}
+                    className="w-full rounded-2xl border border-slate-300 px-5 py-4 outline-none focus:border-blue-600"
+                    placeholder="Lykilorð"
+                  />
+
+                  <button
+                    onClick={loginAdmin}
+                    className="w-full rounded-2xl bg-blue-600 hover:bg-blue-700 transition px-6 py-5 text-lg font-black text-white"
+                  >
+                    Innskrá
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div>
+                <div className="mb-14">
+                  <h1 className="text-5xl font-black tracking-tight">Admin Dashboard</h1>
+                  <p className="text-slate-600 text-lg mt-3">Verkefni, fyrirtæki og tilboð.</p>
+                </div>
+
+                <div className="grid lg:grid-cols-3 gap-8">
+                  <div>
+                    <h3 className="text-2xl font-black mb-6">Verkefni</h3>
+
+                    <div className="space-y-5">
+                      {projects.map((project) => (
+                        <div key={project.id} className="rounded-3xl border border-slate-200 bg-slate-50 p-6">
+                          {project.image_url && (
+                            <img src={project.image_url} className="mb-4 h-40 w-full rounded-2xl object-cover" />
+                          )}
+
+                          <h4 className="text-xl font-black">{project.title}</h4>
+                          <p className="text-slate-600 mt-3">{project.description}</p>
+
+                          <div className="mt-4 text-sm text-slate-500">📍 {project.location || "Óskráð"}</div>
+                          <div className="mt-2 text-sm font-bold text-blue-700">📞 {project.contact}</div>
+
+                          <button
+                            onClick={() => deleteProject(project.id)}
+                            className="mt-5 rounded-2xl bg-red-600 px-4 py-3 text-sm font-black text-white hover:bg-red-700 transition"
+                          >
+                            Eyða verkefni
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="text-2xl font-black mb-6">Fyrirtæki</h3>
+
+                    <div className="space-y-5">
+                      {companies.map((company) => (
+                        <div key={company.id} className="rounded-3xl border border-slate-200 bg-slate-50 p-6">
+                          <h4 className="text-xl font-black">{company.company_name}</h4>
+
+                          <div className="mt-3 text-sm text-blue-700 font-bold">
+                            {company.category || "Óskráð"}
+                          </div>
+
+                          <div className="mt-3 text-sm text-slate-500">📞 {company.contact}</div>
+
+                          <div className="mt-4 text-sm font-bold">
+                            {company.verified ? "✅ Verified" : "Ekki verified"}
+                          </div>
+
+                          <div className="mt-5 flex gap-3">
+                            <button
+                              onClick={() => toggleVerified(company)}
+                              className="rounded-2xl bg-blue-600 px-4 py-3 text-sm font-black text-white hover:bg-blue-700 transition"
+                            >
+                              {company.verified ? "Taka verified af" : "Gera verified"}
+                            </button>
+
+                            <button
+                              onClick={() => deleteCompany(company.id)}
+                              className="rounded-2xl bg-red-600 px-4 py-3 text-sm font-black text-white hover:bg-red-700 transition"
+                            >
+                              Eyða
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="text-2xl font-black mb-6">Tilboð</h3>
+
+                    <div className="space-y-5">
+                      {offers.map((offer) => {
+                        const project = projects.find((p) => p.id === offer.project_id)
+
+                        return (
+                          <div key={offer.id} className="rounded-3xl border border-slate-200 bg-slate-50 p-6">
+                            <div className="text-sm font-bold text-blue-700 mb-3">
+                              {project ? project.title : "Óþekkt verkefni"}
+                            </div>
+
+                            <h4 className="text-xl font-black">{offer.company_name}</h4>
+
+                            <div className="mt-3 text-2xl font-black text-green-700">{offer.price}</div>
+
+                            <p className="text-slate-600 mt-3">{offer.message || "Engin skilaboð"}</p>
+
+                            <div className="mt-3 text-sm text-slate-500">📞 {offer.contact}</div>
+
+                            <button
+                              onClick={() => deleteOffer(offer.id)}
+                              className="mt-5 rounded-2xl bg-red-600 px-4 py-3 text-sm font-black text-white hover:bg-red-700 transition"
+                            >
+                              Eyða tilboði
+                            </button>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen text-slate-900">
-
       <nav className="sticky top-0 z-50 border-b border-slate-200 bg-white/90 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-
           <div className="flex items-center gap-3">
             <div className="w-11 h-11 rounded-2xl bg-blue-600 flex items-center justify-center text-white font-black text-lg shadow-sm">
               V
@@ -359,17 +539,14 @@ function App() {
           <div className="hidden md:flex items-center gap-8 text-sm font-bold">
             <a href="#projects" className="hover:text-blue-600 transition">Verkefni</a>
             <a href="#fyrirtaeki" className="hover:text-blue-600 transition">Fyrirtæki</a>
-            <a href="#admin" className="hover:text-blue-600 transition">Admin</a>
           </div>
-
         </div>
       </nav>
 
       <section className="relative overflow-hidden bg-white">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,#dbeafe,transparent_35%)]"></div>
 
-        <div className="relative max-w-7xl mx-auto px-6 py-24 lg:py-32 grid lg:grid-cols-2 gap-16 items-center">
-
+        <div className="relative max-w-7xl mx-auto px-6 py-20 lg:py-32 grid lg:grid-cols-2 gap-16 items-center">
           <div>
             <div className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-4 py-2 text-sm font-bold text-blue-700 mb-8">
               🇮🇸 Íslenskur vettvangur fyrir verkefni og tilboð
@@ -387,14 +564,13 @@ function App() {
             <div className="grid grid-cols-2 gap-4 mt-10 text-sm font-semibold text-slate-600 max-w-xl">
               <div>✓ Verkefni vistast sjálfkrafa</div>
               <div>✓ Fyrirtæki geta sent tilboð</div>
-              <div>✓ Email notification</div>
-              <div>✓ Admin yfirsýn</div>
+              <div>✓ Myndir af verkefnum</div>
+              <div>✓ Verified fyrirtæki</div>
             </div>
           </div>
 
           <div className="rounded-[40px] border border-slate-200 bg-slate-50 p-5 shadow-2xl">
             <div className="rounded-[32px] bg-white p-7 shadow-sm">
-
               <h2 className="text-3xl font-black mb-6">Setja inn verkefni</h2>
 
               <div className="space-y-5">
@@ -411,9 +587,7 @@ function App() {
                   className="w-full rounded-2xl border border-slate-300 px-5 py-4 outline-none focus:border-blue-600"
                 >
                   <option value="">Veldu flokk</option>
-                  {categories.map((category) => (
-                    <option key={category}>{category}</option>
-                  ))}
+                  {categories.map((category) => <option key={category}>{category}</option>)}
                 </select>
 
                 <textarea
@@ -437,6 +611,13 @@ function App() {
                   placeholder="Sími eða netfang"
                 />
 
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setImageFile(e.target.files[0])}
+                  className="w-full rounded-2xl border border-slate-300 px-5 py-4 bg-white"
+                />
+
                 <button
                   onClick={submitProject}
                   disabled={loading}
@@ -445,16 +626,13 @@ function App() {
                   {loading ? "Sendi..." : "Senda verkefni"}
                 </button>
               </div>
-
             </div>
           </div>
-
         </div>
       </section>
 
       <section id="projects" className="py-24 bg-white border-t border-slate-200">
         <div className="max-w-6xl mx-auto px-6">
-
           <div className="mb-12">
             <h2 className="text-4xl font-black tracking-tight">Nýjustu verkefni</h2>
             <p className="text-slate-600 text-lg mt-3">
@@ -462,37 +640,48 @@ function App() {
             </p>
           </div>
 
-          <div className="grid gap-6">
+          <div className="mb-10 grid md:grid-cols-2 gap-4">
+            <select
+              value={filterCategory}
+              onChange={(e) => setFilterCategory(e.target.value)}
+              className="rounded-2xl border border-slate-300 px-5 py-4 outline-none focus:border-blue-600 bg-white"
+            >
+              <option value="">Allir flokkar</option>
+              {categories.map((category) => <option key={category}>{category}</option>)}
+            </select>
 
-            {projects.length === 0 && (
+            <input
+              value={filterLocation}
+              onChange={(e) => setFilterLocation(e.target.value)}
+              className="rounded-2xl border border-slate-300 px-5 py-4 outline-none focus:border-blue-600 bg-white"
+              placeholder="Leita eftir staðsetningu"
+            />
+          </div>
+
+          <div className="grid gap-6">
+            {filteredProjects.length === 0 && (
               <div className="rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-12 text-center">
-                <h3 className="text-2xl font-black mb-3">Engin verkefni ennþá</h3>
-                <p className="text-slate-600">Vertu fyrstur til að senda inn verkefni.</p>
+                <h3 className="text-2xl font-black mb-3">Engin verkefni fundust</h3>
+                <p className="text-slate-600">Prófaðu annan flokk eða staðsetningu.</p>
               </div>
             )}
 
-            {projects.map((project) => (
-              <div
-                key={project.id}
-                className="rounded-3xl border border-slate-200 bg-slate-50 p-7 shadow-sm"
-              >
+            {filteredProjects.map((project) => (
+              <div key={project.id} className="rounded-3xl border border-slate-200 bg-slate-50 p-7 shadow-sm">
+                {project.image_url && (
+                  <img src={project.image_url} className="mb-6 h-64 w-full rounded-3xl object-cover" />
+                )}
 
                 <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
-
                   <div className="flex-1">
                     <div className="inline-flex rounded-full bg-blue-100 px-3 py-1 text-sm font-bold text-blue-700 mb-4">
                       {project.category || "Annað"}
                     </div>
 
                     <h3 className="text-2xl font-black">{project.title}</h3>
+                    <p className="text-slate-600 mt-3 leading-relaxed">{project.description}</p>
 
-                    <p className="text-slate-600 mt-3 leading-relaxed">
-                      {project.description}
-                    </p>
-
-                    <div className="mt-4 text-sm text-slate-500">
-                      📍 {project.location || "Óskráð"}
-                    </div>
+                    <div className="mt-4 text-sm text-slate-500">📍 {project.location || "Óskráð"}</div>
 
                     <div className="mt-4 text-sm font-bold text-green-700">
                       {getOffersForProject(project.id).length} tilboð komin
@@ -501,17 +690,12 @@ function App() {
 
                   <div className="w-full md:w-[300px]">
                     <button
-                      onClick={() =>
-                        setActiveOfferProjectId(
-                          activeOfferProjectId === project.id ? null : project.id
-                        )
-                      }
+                      onClick={() => setActiveOfferProjectId(activeOfferProjectId === project.id ? null : project.id)}
                       className="w-full rounded-2xl bg-slate-950 px-5 py-4 text-white font-black hover:bg-slate-800 transition"
                     >
                       Senda tilboð
                     </button>
                   </div>
-
                 </div>
 
                 {activeOfferProjectId === project.id && (
@@ -557,26 +741,18 @@ function App() {
                     </div>
                   </div>
                 )}
-
               </div>
             ))}
-
           </div>
-
         </div>
       </section>
 
       <section id="fyrirtaeki" className="py-24">
         <div className="max-w-6xl mx-auto px-6">
-
           <div className="rounded-[44px] bg-slate-950 p-10 lg:p-16 text-white shadow-2xl">
             <div className="grid lg:grid-cols-2 gap-12 items-center">
-
               <div>
-                <h2 className="text-4xl lg:text-5xl font-black tracking-tight">
-                  Ertu með fyrirtæki?
-                </h2>
-
+                <h2 className="text-4xl lg:text-5xl font-black tracking-tight">Ertu með fyrirtæki?</h2>
                 <p className="text-xl text-slate-300 mt-6 leading-relaxed">
                   Skráðu fyrirtækið í beta og fáðu aðgang að verkefnum frá fólki sem vantar þjónustu.
                 </p>
@@ -584,7 +760,6 @@ function App() {
 
               <div className="rounded-[32px] bg-white p-7 text-slate-900">
                 <div className="grid gap-5">
-
                   <input
                     value={companyName}
                     onChange={(e) => setCompanyName(e.target.value)}
@@ -598,10 +773,7 @@ function App() {
                     className="rounded-2xl border border-slate-300 px-5 py-4 outline-none focus:border-blue-600"
                   >
                     <option value="">Veldu flokk</option>
-
-                    {categories.map((category) => (
-                      <option key={category}>{category}</option>
-                    ))}
+                    {categories.map((category) => <option key={category}>{category}</option>)}
                   </select>
 
                   <input
@@ -618,172 +790,33 @@ function App() {
                   >
                     {companyLoading ? "Skrái..." : "Skrá fyrirtæki"}
                   </button>
-
                 </div>
               </div>
-
             </div>
           </div>
 
-        </div>
-      </section>
-
-      <section id="admin" className="py-24 bg-white border-t border-slate-200">
-        <div className="max-w-6xl mx-auto px-6">
-
-          {!adminLoggedIn ? (
-            <div className="max-w-md mx-auto rounded-[32px] border border-slate-200 bg-slate-50 p-8">
-              <h2 className="text-3xl font-black mb-6 text-center">Admin Login</h2>
-
-              <div className="space-y-4">
-                <input
-                  type="password"
-                  value={adminPassword}
-                  onChange={(e) => setAdminPassword(e.target.value)}
-                  className="w-full rounded-2xl border border-slate-300 px-5 py-4 outline-none focus:border-blue-600"
-                  placeholder="Lykilorð"
-                />
-
-                <button
-                  onClick={loginAdmin}
-                  className="w-full rounded-2xl bg-blue-600 hover:bg-blue-700 transition px-6 py-5 text-lg font-black text-white"
-                >
-                  Innskrá
-                </button>
+          <div className="mt-14 grid md:grid-cols-3 gap-6">
+            {companies.filter((c) => c.verified).slice(0, 6).map((company) => (
+              <div key={company.id} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                <div className="text-sm font-black text-green-700 mb-3">✅ Verified</div>
+                <h3 className="text-xl font-black">{company.company_name}</h3>
+                <p className="mt-2 text-sm text-blue-700 font-bold">{company.category || "Óskráð"}</p>
               </div>
-            </div>
-          ) : (
-            <div>
-
-              <div className="mb-14">
-                <h2 className="text-4xl font-black tracking-tight">Admin Dashboard</h2>
-                <p className="text-slate-600 text-lg mt-3">
-                  Hér sérðu verkefni, fyrirtæki og öll tilboð.
-                </p>
-              </div>
-
-              <div className="grid lg:grid-cols-3 gap-8">
-
-                <div>
-                  <h3 className="text-2xl font-black mb-6">Verkefni</h3>
-
-                  <div className="space-y-5">
-                    {projects.map((project) => (
-                      <div key={project.id} className="rounded-3xl border border-slate-200 bg-slate-50 p-6">
-                        <h4 className="text-xl font-black">{project.title}</h4>
-                        <p className="text-slate-600 mt-3">{project.description}</p>
-
-                        <div className="mt-4 text-sm text-slate-500">
-                          📍 {project.location || "Óskráð"}
-                        </div>
-
-                        <div className="mt-2 text-sm font-bold text-blue-700">
-                          📞 {project.contact}
-                        </div>
-
-                        <button
-                          onClick={() => deleteProject(project.id)}
-                          className="mt-5 rounded-2xl bg-red-600 px-4 py-3 text-sm font-black text-white hover:bg-red-700 transition"
-                        >
-                          Eyða verkefni
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="text-2xl font-black mb-6">Fyrirtæki</h3>
-
-                  <div className="space-y-5">
-                    {companies.map((company) => (
-                      <div key={company.id} className="rounded-3xl border border-slate-200 bg-slate-50 p-6">
-                        <h4 className="text-xl font-black">{company.company_name}</h4>
-
-                        <div className="mt-3 text-sm text-blue-700 font-bold">
-                          {company.category || "Óskráð"}
-                        </div>
-
-                        <div className="mt-3 text-sm text-slate-500">
-                          📞 {company.contact}
-                        </div>
-
-                        <button
-                          onClick={() => deleteCompany(company.id)}
-                          className="mt-5 rounded-2xl bg-red-600 px-4 py-3 text-sm font-black text-white hover:bg-red-700 transition"
-                        >
-                          Eyða fyrirtæki
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="text-2xl font-black mb-6">Tilboð</h3>
-
-                  <div className="space-y-5">
-                    {offers.map((offer) => {
-                      const project = projects.find((p) => p.id === offer.project_id)
-
-                      return (
-                        <div key={offer.id} className="rounded-3xl border border-slate-200 bg-slate-50 p-6">
-                          <div className="text-sm font-bold text-blue-700 mb-3">
-                            {project ? project.title : "Óþekkt verkefni"}
-                          </div>
-
-                          <h4 className="text-xl font-black">{offer.company_name}</h4>
-
-                          <div className="mt-3 text-2xl font-black text-green-700">
-                            {offer.price}
-                          </div>
-
-                          <p className="text-slate-600 mt-3">
-                            {offer.message || "Engin skilaboð"}
-                          </p>
-
-                          <div className="mt-3 text-sm text-slate-500">
-                            📞 {offer.contact}
-                          </div>
-
-                          <button
-                            onClick={() => deleteOffer(offer.id)}
-                            className="mt-5 rounded-2xl bg-red-600 px-4 py-3 text-sm font-black text-white hover:bg-red-700 transition"
-                          >
-                            Eyða tilboði
-                          </button>
-                        </div>
-                      )
-                    })}
-                  </div>
-                </div>
-
-              </div>
-
-            </div>
-          )}
-
+            ))}
+          </div>
         </div>
       </section>
 
       <footer className="border-t border-slate-200 bg-white py-10">
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-black">
-              V
-            </div>
-
-            <div className="text-2xl font-black tracking-tight">
-              Verktilbod<span className="text-blue-600">.is</span>
-            </div>
+            <div className="w-10 h-10 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-black">V</div>
+            <div className="text-2xl font-black tracking-tight">Verktilbod<span className="text-blue-600">.is</span></div>
           </div>
 
-          <div className="text-sm text-slate-500">
-            © 2026 Verktilbod — Sendu inn verk. Fáðu tilboð.
-          </div>
+          <div className="text-sm text-slate-500">© 2026 Verktilbod — Sendu inn verk. Fáðu tilboð.</div>
         </div>
       </footer>
-
     </div>
   )
 }
