@@ -43,6 +43,11 @@ const supabase = window.supabase.createClient(
 
 function App() {
 
+  const ADMIN_PASSWORD = "verktilbod2026"
+
+  const [adminPassword, setAdminPassword] = React.useState("")
+  const [adminLoggedIn, setAdminLoggedIn] = React.useState(false)
+
   const [title, setTitle] = React.useState("")
   const [category, setCategory] = React.useState("")
   const [description, setDescription] = React.useState("")
@@ -185,6 +190,15 @@ function App() {
     loadCompanies()
   }
 
+  function loginAdmin() {
+
+    if (adminPassword === ADMIN_PASSWORD) {
+      setAdminLoggedIn(true)
+    } else {
+      alert("Rangt lykilorð")
+    }
+  }
+
   return (
     <div className="min-h-screen text-slate-900">
 
@@ -205,10 +219,6 @@ function App() {
           </div>
 
           <div className="hidden md:flex items-center gap-8 text-sm font-bold">
-
-            <a href="#how" className="hover:text-blue-600 transition">
-              Hvernig virkar þetta?
-            </a>
 
             <a href="#projects" className="hover:text-blue-600 transition">
               Verkefni
@@ -249,7 +259,6 @@ function App() {
 
             <p className="mt-8 text-xl leading-relaxed text-slate-600 max-w-2xl">
               Verktilbod tengir einstaklinga og fyrirtæki við fagmenn.
-              Settu inn verkefni og fáðu tilboð frá þjónustuaðilum á þínu svæði.
             </p>
 
           </div>
@@ -341,10 +350,6 @@ function App() {
               Nýjustu verkefni
             </h2>
 
-            <p className="text-slate-600 text-lg mt-3">
-              Verk sem hafa nýlega verið sett inn.
-            </p>
-
           </div>
 
           <div className="grid gap-6">
@@ -415,10 +420,6 @@ function App() {
                   Ertu með fyrirtæki?
                 </h2>
 
-                <p className="text-xl text-slate-300 mt-6 leading-relaxed">
-                  Skráðu fyrirtækið í beta og fáðu aðgang að verkefnum frá fólki sem vantar þjónustu.
-                </p>
-
               </div>
 
               <div className="rounded-[32px] bg-white p-7 text-slate-900">
@@ -484,95 +485,128 @@ function App() {
 
         <div className="max-w-6xl mx-auto px-6">
 
-          <div className="mb-14">
+          {!adminLoggedIn ? (
 
-            <h2 className="text-4xl font-black tracking-tight">
-              Admin Dashboard
-            </h2>
+            <div className="max-w-md mx-auto rounded-[32px] border border-slate-200 bg-slate-50 p-8">
 
-            <p className="text-slate-600 text-lg mt-3">
-              Aðeins fyrir eiganda síðunnar.
-            </p>
+              <h2 className="text-3xl font-black mb-6 text-center">
+                Admin Login
+              </h2>
 
-          </div>
+              <div className="space-y-4">
 
-          <div className="grid lg:grid-cols-2 gap-10">
+                <input
+                  type="password"
+                  value={adminPassword}
+                  onChange={(e) => setAdminPassword(e.target.value)}
+                  className="w-full rounded-2xl border border-slate-300 px-5 py-4 outline-none focus:border-blue-600"
+                  placeholder="Lykilorð"
+                />
 
-            <div>
-
-              <h3 className="text-2xl font-black mb-6">
-                Verkefni
-              </h3>
-
-              <div className="space-y-5">
-
-                {projects.map((project) => (
-
-                  <div
-                    key={project.id}
-                    className="rounded-3xl border border-slate-200 bg-slate-50 p-6"
-                  >
-
-                    <h4 className="text-xl font-black">
-                      {project.title}
-                    </h4>
-
-                    <p className="text-slate-600 mt-3">
-                      {project.description}
-                    </p>
-
-                    <div className="mt-4 text-sm text-slate-500">
-                      📍 {project.location}
-                    </div>
-
-                    <div className="mt-2 text-sm font-bold text-blue-700">
-                      📞 {project.contact}
-                    </div>
-
-                  </div>
-
-                ))}
+                <button
+                  onClick={loginAdmin}
+                  className="w-full rounded-2xl bg-blue-600 hover:bg-blue-700 transition px-6 py-5 text-lg font-black text-white"
+                >
+                  Innskrá
+                </button>
 
               </div>
 
             </div>
 
+          ) : (
+
             <div>
 
-              <h3 className="text-2xl font-black mb-6">
-                Fyrirtæki
-              </h3>
+              <div className="mb-14">
 
-              <div className="space-y-5">
+                <h2 className="text-4xl font-black tracking-tight">
+                  Admin Dashboard
+                </h2>
 
-                {companies.map((company) => (
+              </div>
 
-                  <div
-                    key={company.id}
-                    className="rounded-3xl border border-slate-200 bg-slate-50 p-6"
-                  >
+              <div className="grid lg:grid-cols-2 gap-10">
 
-                    <h4 className="text-xl font-black">
-                      {company.company_name}
-                    </h4>
+                <div>
 
-                    <div className="mt-3 text-sm text-blue-700 font-bold">
-                      {company.category || "Óskráð"}
-                    </div>
+                  <h3 className="text-2xl font-black mb-6">
+                    Verkefni
+                  </h3>
 
-                    <div className="mt-3 text-sm text-slate-500">
-                      📞 {company.contact}
-                    </div>
+                  <div className="space-y-5">
+
+                    {projects.map((project) => (
+
+                      <div
+                        key={project.id}
+                        className="rounded-3xl border border-slate-200 bg-slate-50 p-6"
+                      >
+
+                        <h4 className="text-xl font-black">
+                          {project.title}
+                        </h4>
+
+                        <p className="text-slate-600 mt-3">
+                          {project.description}
+                        </p>
+
+                        <div className="mt-4 text-sm text-slate-500">
+                          📍 {project.location}
+                        </div>
+
+                        <div className="mt-2 text-sm font-bold text-blue-700">
+                          📞 {project.contact}
+                        </div>
+
+                      </div>
+
+                    ))}
 
                   </div>
 
-                ))}
+                </div>
+
+                <div>
+
+                  <h3 className="text-2xl font-black mb-6">
+                    Fyrirtæki
+                  </h3>
+
+                  <div className="space-y-5">
+
+                    {companies.map((company) => (
+
+                      <div
+                        key={company.id}
+                        className="rounded-3xl border border-slate-200 bg-slate-50 p-6"
+                      >
+
+                        <h4 className="text-xl font-black">
+                          {company.company_name}
+                        </h4>
+
+                        <div className="mt-3 text-sm text-blue-700 font-bold">
+                          {company.category || "Óskráð"}
+                        </div>
+
+                        <div className="mt-3 text-sm text-slate-500">
+                          📞 {company.contact}
+                        </div>
+
+                      </div>
+
+                    ))}
+
+                  </div>
+
+                </div>
 
               </div>
 
             </div>
 
-          </div>
+          )}
 
         </div>
 
